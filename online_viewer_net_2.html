@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SBB – Hero + previews</title>
+<style>
+  :root{
+    /* Kleuren */
+    --brand:#923530;             /* Binnenafbouw (bordeaux) */
+    --transport:#6b4f3b;         /* bruin */
+    --bouwtechniek:#215c49;      /* groen */
+    --interieur:#caa42a;         /* geel */
+
+    /* HERO dynamische vars */
+    --hero-bg: var(--brand);     /* kleur-overlay boven foto */
+    --hero-img: url("Images/binnenafbouw_achtergrond.png"); /* startfoto */
+
+    --shadow:0 10px 30px rgba(0,0,0,.15);
+    --speed:.35s;
+    --header-h:84px;
+    --gap:16px;
+    --split-h:480px;             /* door JS gezet */
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font:16px/1.45 system-ui,Segoe UI,Roboto,Arial; color:#212121}
+
+  /* HEADER */
+  header{
+    position:relative; z-index:10; height:var(--header-h);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; background:#fff; box-shadow:var(--shadow);
+  }
+  .header-left{display:flex; gap:20px; align-items:center; flex:1 1 auto; min-width:0}
+  .contact-item{display:flex; align-items:center; gap:10px; white-space:nowrap; font-weight:600}
+  .contact-item img{width:20px; height:20px}
+  .contact-item a{color:#111; text-decoration:none}
+  .contact-item a:hover{text-decoration:underline}
+
+  /* Middenlogo (blijft binnenafbouw) */
+  .logo-main{
+    position:absolute; left:50%; top:100%; transform:translate(-50%,-50%);
+    width:280px; height:auto; z-index:20; pointer-events:none;
+  }
+
+  /* Menu rechts */
+  .header-right{position:relative}
+  nav.site-nav{position:relative}
+  .menu-toggle{width:36px; height:28px; display:grid; gap:6px; cursor:pointer}
+  .menu-toggle span{display:block; height:4px; background:#111; border-radius:2px}
+  .menu{
+    position:absolute; top:calc(100% + 10px); right:0;
+    background:#fff; box-shadow:var(--shadow); border-radius:12px;
+    padding:16px; min-width:220px; display:none;
+  }
+  .site-nav:hover .menu, .site-nav.pinned .menu{display:block}
+  .menu ul{list-style:none; padding:0; margin:0}
+  .menu li{padding:6px 0; font-weight:600; cursor:pointer}
+  .submenu{margin-left:12px; font-weight:500}
+  .search{margin-top:12px}
+  .search input{width:100%; padding:8px; border:1px solid #ccc; border-radius:6px}
+  .footer-links{margin-top:12px; display:flex; justify-content:space-between; font-size:14px}
+
+  /* HERO */
+  .hero{
+    position:relative; isolation:isolate; overflow:hidden;
+    aspect-ratio:16 / 9; width:100%; height:auto;
+    max-height:max(220px, calc(100vh - var(--header-h) - var(--split-h) - var(--gap)));
+    border-radius:0;
+    box-shadow: inset 0 0 60px rgba(0,0,0,.28), var(--shadow);
+    background: var(--hero-img) center/cover no-repeat; /* FOTO */
+    color:#fff; display:grid; place-items:center; text-align:center;
+    padding:40px 20px; margin:0;
+    transition: background-image var(--speed) ease;
+  }
+  /* transparante kleur-overlay + vignet bovenop de foto */
+  .hero::before, .hero::after{content:""; position:absolute; inset:0; pointer-events:none}
+  .hero::before{background:var(--hero-bg); opacity:.55}  /* kleur overlay */
+  .hero::after{background:radial-gradient(100% 70% at 50% 50%, rgba(0,0,0,.0) 40%, rgba(0,0,0,.35) 100%)} /* vignet */
+
+  .hero-content{position:relative; z-index:5}
+  .hero h1{margin:0; font-size:clamp(30px,5vw,56px); font-weight:800}
+  .hero .line2{display:block; font-weight:600; opacity:.95}
+  .hero .cta{margin-top:18px; display:inline-block; background:#fff; color:#111;
+    padding:12px 18px; border-radius:14px; font-weight:700; text-decoration:none; box-shadow:0 3px 10px rgba(0,0,0,.15)}
+
+  /* WRAP */
+  .wrap{max-width:1240px; margin:auto; padding:24px}
+
+  /* SPLIT: twee kolommen */
+  .split{display:grid; gap:18px; margin-top:0; grid-template-columns:1fr; align-items:start;}
+  @media (min-width:900px){ .split{ grid-template-columns:1.1fr 2fr; } }
+
+  /* Linkerkolom (tekst + pijl) */
+  .lead-col{display:flex; align-items:center; gap:16px;}
+  .section-title{font-weight:900; font-size:clamp(24px,3.2vw,38px); margin:0;}
+  .arrow{width:56px; height:56px; border-radius:50%; display:grid; place-items:center; background:#212121; color:#fff;}
+  .arrow svg{width:28px; height:28px}
+
+  /* Kaarten rechts */
+  .cards{display:grid; grid-template-columns:repeat(3, 1fr); gap:18px}
+  .card{
+    position:relative; display:block; text-decoration:none; color:#fff;
+    border-radius:18px; min-height:280px;
+    background:#2f2f2f; box-shadow:var(--shadow);
+    transition: transform var(--speed) ease, box-shadow var(--speed) ease;
+    overflow:hidden; background-position:center; background-size:cover;
+  }
+  .card:hover{ transform:scale(1.045); box-shadow:0 16px 40px rgba(0,0,0,.18) }
+  /* doorzichtige kleur-overlay op kaarten */
+  .card::after{content:""; position:absolute; inset:0; pointer-events:none; background:var(--card-color); opacity:.55;}
+  /* klein logo op kaart */
+  .card .logo-img{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    height:72px; width:auto; object-fit:contain;
+    filter: drop-shadow(0 6px 16px rgba(0,0,0,.25));
+  }
+
+  /* Per tak: kleine achtergronden + overlaykleur */
+  .card[data-key="transport"]{--card-color: var(--transport); background-image:url("Images/transport_achtergrond_klein.png");}
+  .card[data-key="bouwtechniek"]{--card-color: var(--bouwtechniek); background-image:url("Images/bouwtechniek_achtergrond_klein.png");}
+  .card[data-key="interieur"]{--card-color: var(--interieur); background-image:url("Images/interieur_achtergrond_klein.png"); color:#111;}
+
+  @media (prefers-reduced-motion: reduce){ .card,.hero{transition:none} }
+</style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="contact-item">
+        <img src="Images/telicon.png" alt="Telefoon">
+        <div><div>Bel ons direct</div><a href="tel:+31332471030">033 – 24 71 030</a></div>
+      </div>
+      <div class="contact-item">
+        <img src="Images/mailicon.png" alt="E-mail">
+        <div><div>Of stuur ons een e-mail</div><a href="mailto:info@sbbbinnenafbouw.nl">info@sbbbinnenafbouw.nl</a></div>
+      </div>
+    </div>
+    <!-- Middenlogo blijft Binnenafbouw -->
+    <img src="Images/052025_SBB binnenafbouw_logo_wit.png" alt="SBB Binnenafbouw" class="logo-main" id="centerLogo">
+    <div class="header-right">
+      <nav class="site-nav" id="siteNav" aria-label="Hoofdmenu">
+        <div class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></div>
+        <div class="menu" id="menuPanel">
+          <ul>
+            <li>Diensten</li><li>Projecten</li><li>Nieuws</li><li>Contact</li>
+            <li>Vacatures</li><li>Over ons</li>
+            <li>Bedrijven
+              <ul class="submenu"><li>Bouwtechniek</li><li>Transport</li><li>Interieur</li></ul>
+            </li>
+          </ul>
+          <div class="search"><input type="text" placeholder="Zoeken..."></div>
+          <div class="footer-links"><span>[LinkedIn]</span><span>[Privacy statement]</span></div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <h1><span class="line1">Uw partner</span> <span class="line2">in droge binnen afbouw!</span></h1>
+      <a class="cta" href="#contact">Samenwerken</a>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <div class="wrap">
+    <section class="split" id="splitSec">
+      <!-- LINKS (tekst + pijl) -->
+      <div class="lead-col">
+        <p class="section-title">Ontdek andere bedrijven binnen SBB</p>
+        <div class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- RECHTS (kaarten) -->
+      <nav class="cards">
+        <!-- TRANSPORT -->
+        <a class="card"
+           data-key="transport"
+           data-color="var(--transport)"
+           data-hero="Images/transport_achtergrond.png"
+           data-text="in transportoplossingen"
+           href="#">
+          <img class="logo-img" src="Images/052025_SBB transport_logo_wit.png" alt="SBB Transport">
+        </a>
+
+        <!-- BOUWTECHNIEK -->
+        <a class="card"
+           data-key="bouwtechniek"
+           data-color="var(--bouwtechniek)"
+           data-hero="Images/bouwtechniek_achtergrond.png"
+           data-text="in energielabels"
+           href="#">
+          <img class="logo-img" src="Images/052025_SBB bouwtechniek_logo_wit.png" alt="SBB Bouwtechniek">
+        </a>
+
+        <!-- INTERIEUR -->
+        <a class="card"
+           data-key="interieur"
+           data-color="var(--interieur)"
+           data-hero="Images/interieur_achtergrond.png"
+           data-text="in interieurbouw"
+           href="#">
+          <img class="logo-img" src="Images/052025_SBB interieur_logo_wit.png" alt="SBB Interieur">
+        </a>
+      </nav>
+    </section>
+  </div>
+
+<script>
+  const hero  = document.getElementById('hero');
+  const l1    = hero.querySelector('.line1');
+  const l2    = hero.querySelector('.line2');
+  const split = document.getElementById('splitSec');
+
+  const DEFAULT = {
+    color: getComputedStyle(document.documentElement).getPropertyValue('--brand').trim(),
+    img:   'Images/binnenafbouw_achtergrond.png',
+    l1:    'Uw partner',
+    l2:    'in droge binnen afbouw!'
+  };
+  // startwaarden
+  document.documentElement.style.setProperty('--hero-bg', DEFAULT.color);
+  document.documentElement.style.setProperty('--hero-img', `url("${DEFAULT.img}")`);
+
+  // Hover op kaarten: zet HERO-foto + overlay-kleur
+  document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('mouseenter', ()=>{
+      const c   = card.dataset.color || DEFAULT.color;
+      const img = card.dataset.hero || DEFAULT.img;
+
+      document.documentElement.style.setProperty('--hero-bg', c);
+      document.documentElement.style.setProperty('--hero-img', `url("${img}")`);
+
+      l1.textContent = 'Uw partner';
+      l2.textContent = card.dataset.text || DEFAULT.l2;
+    });
+    card.addEventListener('mouseleave', ()=>{
+      document.documentElement.style.setProperty('--hero-bg', DEFAULT.color);
+      document.documentElement.style.setProperty('--hero-img', `url("${DEFAULT.img}")`);
+      l1.textContent = DEFAULT.l1;
+      l2.textContent = DEFAULT.l2;
+    });
+  });
+
+  // Menu: klik vast/los, klik buiten sluit
+  const siteNav    = document.getElementById('siteNav');
+  const menuToggle = document.getElementById('menuToggle');
+  menuToggle.addEventListener('click', (e)=>{ e.stopPropagation(); siteNav.classList.toggle('pinned'); });
+  document.addEventListener('click', (e)=>{ if(!siteNav.contains(e.target)){ siteNav.classList.remove('pinned'); } });
+
+  // Zorg dat hero + split in 1 viewport passen (hero 16:9; krimpt zo nodig)
+  function setSplitHeightVar(){
+    if (!split) return;
+    document.documentElement.style.setProperty('--split-h', split.offsetHeight + 'px');
+  }
+  window.addEventListener('load', setSplitHeightVar);
+  window.addEventListener('resize', setSplitHeightVar);
+  if (window.ResizeObserver){ new ResizeObserver(setSplitHeightVar).observe(split); }
+</script>
+</body>
+</html>
