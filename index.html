@@ -137,7 +137,7 @@
         <div><div>Of stuur ons een e-mail</div><a href="mailto:info@sbbbinnenafbouw.nl">info@sbbbinnenafbouw.nl</a></div>
       </div>
     </div>
-    <!-- Middenlogo blijft Binnenafbouw -->
+    <!-- Middenlogo: start met Binnenafbouw -->
     <img src="Images/052025_SBB binnenafbouw_logo_wit.png" alt="SBB Binnenafbouw" class="logo-main" id="centerLogo">
     <div class="header-right">
       <nav class="site-nav" id="siteNav" aria-label="Hoofdmenu">
@@ -184,6 +184,7 @@
            data-color="var(--transport)"
            data-hero="Images/transport_achtergrond.png"
            data-text="in transportoplossingen"
+           data-logo="Images/052025_SBB transport_logo_wit.png"
            href="#">
           <img class="logo-img" src="Images/052025_SBB transport_logo_wit.png" alt="SBB Transport">
         </a>
@@ -194,6 +195,7 @@
            data-color="var(--bouwtechniek)"
            data-hero="Images/bouwtechniek_achtergrond.png"
            data-text="in energielabels"
+           data-logo="Images/052025_SBB bouwtechniek_logo_wit.png"
            href="#">
           <img class="logo-img" src="Images/052025_SBB bouwtechniek_logo_wit.png" alt="SBB Bouwtechniek">
         </a>
@@ -204,6 +206,7 @@
            data-color="var(--interieur)"
            data-hero="Images/interieur_achtergrond.png"
            data-text="in interieurbouw"
+           data-logo="Images/052025_SBB interieur_logo_wit.png"
            href="#">
           <img class="logo-img" src="Images/052025_SBB interieur_logo_wit.png" alt="SBB Interieur">
         </a>
@@ -216,34 +219,48 @@
   const l1    = hero.querySelector('.line1');
   const l2    = hero.querySelector('.line2');
   const split = document.getElementById('splitSec');
+  const centerLogo = document.getElementById('centerLogo');
 
   const DEFAULT = {
     color: getComputedStyle(document.documentElement).getPropertyValue('--brand').trim(),
     img:   'Images/binnenafbouw_achtergrond.png',
     l1:    'Uw partner',
-    l2:    'in droge binnen afbouw!'
+    l2:    'in droge binnen afbouw!',
+    logoSrc: centerLogo.getAttribute('src'),
+    logoAlt: centerLogo.getAttribute('alt')
   };
+
   // startwaarden
   document.documentElement.style.setProperty('--hero-bg', DEFAULT.color);
   document.documentElement.style.setProperty('--hero-img', `url("${DEFAULT.img}")`);
 
-  // Hover op kaarten: zet HERO-foto + overlay-kleur
+  // Hover op kaarten: zet HERO-foto + overlay-kleur + center-logo
   document.querySelectorAll('.card').forEach(card=>{
     card.addEventListener('mouseenter', ()=>{
-      const c   = card.dataset.color || DEFAULT.color;
-      const img = card.dataset.hero || DEFAULT.img;
+      const c    = card.dataset.color || DEFAULT.color;
+      const img  = card.dataset.hero  || DEFAULT.img;
+      const logo = card.dataset.logo;
 
       document.documentElement.style.setProperty('--hero-bg', c);
       document.documentElement.style.setProperty('--hero-img', `url("${img}")`);
 
-      l1.textContent = 'Uw partner';
+      l1.textContent = DEFAULT.l1;
       l2.textContent = card.dataset.text || DEFAULT.l2;
+
+      if (logo){
+        centerLogo.src = logo;
+        centerLogo.alt = (card.querySelector('.logo-img')?.alt) || ('SBB ' + (card.dataset.key || ''));
+      }
     });
+
     card.addEventListener('mouseleave', ()=>{
       document.documentElement.style.setProperty('--hero-bg', DEFAULT.color);
       document.documentElement.style.setProperty('--hero-img', `url("${DEFAULT.img}")`);
       l1.textContent = DEFAULT.l1;
       l2.textContent = DEFAULT.l2;
+
+      centerLogo.src = DEFAULT.logoSrc;
+      centerLogo.alt = DEFAULT.logoAlt;
     });
   });
 
