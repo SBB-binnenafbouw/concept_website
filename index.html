@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SBB – Hero + previews</title>
+<title>SBB – Hero + previews (scroll-logo)</title>
 <style>
   :root{
     /* Kleuren */
@@ -21,6 +21,11 @@
     --header-h:84px;
     --gap:16px;
     --split-h:480px;             /* door JS gezet */
+
+    /* LOGO maten */
+    --logo-h-large:178px;        /* gegeven hoogte */
+    --logo-cut:65px;             /* 65px over header */
+    --logo-h-small:56px;         /* hoogte in header bij scroll */
   }
   *{box-sizing:border-box}
   body{margin:0; font:16px/1.45 system-ui,Segoe UI,Roboto,Arial; color:#212121}
@@ -37,10 +42,20 @@
   .contact-item a{color:#111; text-decoration:none}
   .contact-item a:hover{text-decoration:underline}
 
-  /* Middenlogo (blijft binnenafbouw) */
+  /* Middenlogo */
   .logo-main{
-    position:absolute; left:50%; top:100%; transform:translate(-50%,-50%);
-    width:280px; height:auto; z-index:20; pointer-events:none;
+    position:absolute; left:50%;
+    /* Plaats de snijlijn (header-onderkant) op 65px vanaf bovenkant van het logo */
+    top:calc(100% - var(--logo-cut));
+    transform:translateX(-50%);
+    height:var(--logo-h-large); width:auto; z-index:20; pointer-events:none;
+    transition: top .25s ease, transform .25s ease, height .25s ease;
+  }
+  /* Bij scroll: logo wordt kleiner en komt volledig in de header, gecentreerd */
+  header.shrunk .logo-main{
+    top:50%;
+    transform:translate(-50%,-50%);
+    height:var(--logo-h-small);
   }
 
   /* Menu rechts */
@@ -121,12 +136,16 @@
   .card[data-key="bouwtechniek"]{--card-color: var(--bouwtechniek); background-image:url("Images/bouwtechniek_achtergrond_klein.png");}
   .card[data-key="interieur"]{--card-color: var(--interieur); background-image:url("Images/interieur_achtergrond_klein.png"); color:#111;}
 
-  @media (prefers-reduced-motion: reduce){ .card,.hero{transition:none} }
+  /* Dummy content zodat de pagina langer is en je kunt scrollen */
+  .long-content{max-width:1240px; margin:40px auto; padding:0 24px 80px}
+  .long-content p{max-width:70ch}
+
+  @media (prefers-reduced-motion: reduce){ .card,.hero,.logo-main{transition:none} }
 </style>
 </head>
 <body>
   <!-- HEADER -->
-  <header>
+  <header id="pageHeader">
     <div class="header-left">
       <div class="contact-item">
         <img src="Images/telicon.png" alt="Telefoon">
@@ -214,12 +233,22 @@
     </section>
   </div>
 
+  <!-- Extra lange content zodat je kunt scrollen -->
+  <section class="long-content">
+    <h2>Meer over SBB</h2>
+    <p>Placeholder-tekst voor extra lengte. Voeg hier straks echte content toe. Deze sectie is alleen om scrollgedrag en het inschuiven van het logo te testen.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Pellentesque a arcu non dolor aliquam vestibulum. Phasellus luctus, velit at elementum interdum, sem risus facilisis urna, non dictum tellus lorem in quam. Donec placerat dapibus arcu, sit amet faucibus sem.</p>
+    <p>Aliquam erat volutpat. Sed feugiat lectus id libero aliquam, sed dictum ipsum pharetra. Donec id tellus in ipsum vehicula rhoncus. Mauris finibus elementum purus, a mattis magna vulputate sit amet. Nulla facilisi. Integer a arcu bibendum, aliquam nibh at, viverra risus.</p>
+    <p style="height:900px"></p>
+  </section>
+
 <script>
   const hero  = document.getElementById('hero');
   const l1    = hero.querySelector('.line1');
   const l2    = hero.querySelector('.line2');
   const split = document.getElementById('splitSec');
   const centerLogo = document.getElementById('centerLogo');
+  const pageHeader = document.getElementById('pageHeader');
 
   const DEFAULT = {
     color: getComputedStyle(document.documentElement).getPropertyValue('--brand').trim(),
@@ -278,6 +307,17 @@
   window.addEventListener('load', setSplitHeightVar);
   window.addEventListener('resize', setSplitHeightVar);
   if (window.ResizeObserver){ new ResizeObserver(setSplitHeightVar).observe(split); }
+
+  // Scroll: logo kleiner maken en in de header centreren (niet meer onder de header uitsteken)
+  function handleScroll(){
+    if (window.scrollY > 8){
+      pageHeader.classList.add('shrunk');
+    } else {
+      pageHeader.classList.remove('shrunk');
+    }
+  }
+  window.addEventListener('scroll', handleScroll, {passive:true});
+  handleScroll(); // init bij laden
 </script>
 </body>
 </html>
