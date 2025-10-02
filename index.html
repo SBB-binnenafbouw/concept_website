@@ -42,15 +42,8 @@
   /* Middenlogo */
   .logo-main{
     position:absolute; left:50%;
-    top:calc(100% - var(--logo-cut));
     transform:translateX(-50%);
-    height:var(--logo-h-large); width:auto; z-index:20; pointer-events:none;
-    transition: top .6s ease, transform .6s ease, height .6s ease;
-  }
-  header.shrunk .logo-main{
-    top:50%;
-    transform:translate(-50%,-50%);
-    height:var(--logo-h-small);
+    z-index:20; pointer-events:none;
   }
 
   .header-right{position:relative}
@@ -238,16 +231,25 @@
 
   function handleScroll(){
     const heroBottom = hero.offsetTop + hero.offsetHeight;
-    const headerBottom = window.scrollY + pageHeader.offsetHeight;
+    const scrollY = window.scrollY;
+    const maxScroll = heroBottom - pageHeader.offsetHeight;
+    let progress = Math.min(scrollY / maxScroll, 1);
 
-    if (headerBottom >= heroBottom){
-      pageHeader.classList.add('shrunk');
-    } else {
-      pageHeader.classList.remove('shrunk');
-    }
+    // Interpoleer positie en grootte
+    const startTop = pageHeader.offsetHeight - parseInt(getComputedStyle(document.documentElement).getPropertyValue('--logo-cut'));
+    const endTop = pageHeader.offsetHeight/2;
+    const top = startTop + (endTop - startTop) * progress;
+
+    const startHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--logo-h-large'));
+    const endHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--logo-h-small'));
+    const height = startHeight + (endHeight - startHeight) * progress;
+
+    centerLogo.style.top = top + 'px';
+    centerLogo.style.transform = `translate(-50%,-${progress*50}%)`;
+    centerLogo.style.height = height + 'px';
   }
   window.addEventListener('scroll', handleScroll, {passive:true});
-  handleScroll();
+  window.addEventListener('load', handleScroll);
 </script>
 </body>
 </html>
