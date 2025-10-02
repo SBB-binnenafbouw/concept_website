@@ -18,12 +18,13 @@
     --header-h:84px;
 
     --logo-h-large:178px;
-    --logo-cut:65px;
+    --logo-cut:65px;   /* deel dat over de header valt bij start */
     --logo-h-small:56px;
   }
   *{box-sizing:border-box}
   body{margin:0; font:16px/1.45 system-ui,Segoe UI,Roboto,Arial; color:#212121; padding-top:var(--header-h)}
 
+  /* HEADER */
   header{
     position:fixed; top:0; left:0; right:0;
     z-index:10; height:var(--header-h);
@@ -37,6 +38,7 @@
   .contact-item a{color:#111; text-decoration:none}
   .contact-item a:hover{text-decoration:underline}
 
+  /* Middenlogo wrap (bevat wit + zwart voor crossfade) */
   .logo-wrap{
     position:absolute; left:50%; transform:translateX(-50%);
     z-index:20; pointer-events:none; height:var(--logo-h-large);
@@ -61,6 +63,7 @@
   .search input{width:100%; padding:8px; border:1px solid #ccc; border-radius:6px}
   .footer-links{margin-top:12px; display:flex; justify-content:space-between; font-size:14px}
 
+  /* HERO */
   .hero{
     position:relative; isolation:isolate; overflow:hidden;
     aspect-ratio:16 / 9; width:100%; height:auto;
@@ -115,6 +118,7 @@
       </div>
     </div>
 
+    <!-- Logo wrap met wit + zwart -->
     <div class="logo-wrap" id="logoWrap">
       <img class="logo-white" id="logoWhite" src="Images/052025_SBB binnenafbouw_logo_wit.png" alt="SBB Binnenafbouw wit">
       <img class="logo-black" id="logoBlack" src="Images/052025_SBB binnenafbouw_logo_zwart.png" alt="SBB Binnenafbouw zwart">
@@ -155,13 +159,37 @@
       </div>
 
       <nav class="cards">
-        <a class="card" data-key="transport" data-color="var(--transport)" data-hero="Images/transport_achtergrond.png" data-text="in transportoplossingen" data-logo-white="Images/052025_SBB transport_logo_wit.png" data-logo-black="Images/052025_SBB transport_logo_wit.png" href="#">
+        <!-- Voeg data-logo-black toe als je ook een zwarte variant hebt; anders blijft hij wit -->
+        <a class="card"
+           data-key="transport"
+           data-color="var(--transport)"
+           data-hero="Images/transport_achtergrond.png"
+           data-text="in transportoplossingen"
+           data-logo-white="Images/052025_SBB transport_logo_wit.png"
+           data-logo-black="Images/052025_SBB transport_logo_wit.png"
+           href="#">
           <img class="logo-img" src="Images/052025_SBB transport_logo_wit.png" alt="SBB Transport">
         </a>
-        <a class="card" data-key="bouwtechniek" data-color="var(--bouwtechniek)" data-hero="Images/bouwtechniek_achtergrond.png" data-text="in energielabels" data-logo-white="Images/052025_SBB bouwtechniek_logo_wit.png" data-logo-black="Images/052025_SBB bouwtechniek_logo_wit.png" href="#">
+
+        <a class="card"
+           data-key="bouwtechniek"
+           data-color="var(--bouwtechniek)"
+           data-hero="Images/bouwtechniek_achtergrond.png"
+           data-text="in energielabels"
+           data-logo-white="Images/052025_SBB bouwtechniek_logo_wit.png"
+           data-logo-black="Images/052025_SBB bouwtechniek_logo_wit.png"
+           href="#">
           <img class="logo-img" src="Images/052025_SBB bouwtechniek_logo_wit.png" alt="SBB Bouwtechniek">
         </a>
-        <a class="card" data-key="interieur" data-color="var(--interieur)" data-hero="Images/interieur_achtergrond.png" data-text="in interieurbouw" data-logo-white="Images/052025_SBB interieur_logo_wit.png" data-logo-black="Images/052025_SBB interieur_logo_wit.png" href="#">
+
+        <a class="card"
+           data-key="interieur"
+           data-color="var(--interieur)"
+           data-hero="Images/interieur_achtergrond.png"
+           data-text="in interieurbouw"
+           data-logo-white="Images/052025_SBB interieur_logo_wit.png"
+           data-logo-black="Images/052025_SBB interieur_logo_wit.png"
+           href="#">
           <img class="logo-img" src="Images/052025_SBB interieur_logo_wit.png" alt="SBB Interieur">
         </a>
       </nav>
@@ -185,6 +213,7 @@
   const imgW   = document.getElementById('logoWhite');
   const imgB   = document.getElementById('logoBlack');
 
+  // Startwaarden
   const css = getComputedStyle(document.documentElement);
   const H_HEADER     = parseFloat(css.getPropertyValue('--header-h'));
   const H_LARGE      = parseFloat(css.getPropertyValue('--logo-h-large'));
@@ -203,12 +232,13 @@
   document.documentElement.style.setProperty('--hero-bg', DEFAULT.color);
   document.documentElement.style.setProperty('--hero-img', `url("${DEFAULT.img}")`);
 
+  // Hover op kaarten: verander hero + center-logo varianten
   document.querySelectorAll('.card').forEach(card=>{
     card.addEventListener('mouseenter', ()=>{
       const c     = card.dataset.color || DEFAULT.color;
       const img   = card.dataset.hero  || DEFAULT.img;
-      const srcW  = card.dataset.logoWhite || DEFAULT.white;
-      const srcB  = card.dataset.logoBlack || srcW;
+      const srcW  = card.dataset.logoWhite || card.dataset.logo || DEFAULT.white;
+      const srcB  = card.dataset.logoBlack || srcW; // als geen zwart: gebruik wit
 
       document.documentElement.style.setProperty('--hero-bg', c);
       document.documentElement.style.setProperty('--hero-img', `url("${img}")`);
@@ -231,28 +261,33 @@
     });
   });
 
+  // Scroll-animatie: positie/hoogte logo + crossfade kleur
   function onScroll(){
-    const heroBottom = hero.offsetTop + hero.offsetHeight;
+    const heroBottom = hero.offsetTop + hero.offsetHeight; // px vanaf documenttop
     const scrollY    = window.scrollY;
-    const maxScroll  = Math.max(heroBottom - H_HEADER, 1);
-    const t          = Math.min(scrollY / maxScroll, 1);
+    const maxScroll  = Math.max(heroBottom - H_HEADER, 1); // traject waarbinnen we animeren
+    const t          = Math.min(scrollY / maxScroll, 1);   // progress 0..1
 
+    // Interpoleer hoogte & top (geen translateY meer nodig)
     const h   = H_LARGE + (H_SMALL - H_LARGE) * t;
-    const topStart = H_HEADER - LOGO_CUT;
-    const topEnd   = (H_HEADER - h) / 2;
+    const topStart = H_HEADER - LOGO_CUT;           // logo steekt 65px onder header
+    const topEnd   = (H_HEADER - h) / 2;            // gecentreerd in header
     const top      = topStart + (topEnd - topStart) * t;
 
     wrap.style.height = h + 'px';
     wrap.style.top    = top + 'px';
 
+    // Bereken overlap van logo met header (px)
     const logoTop    = top;
     const logoBottom = top + h;
     const headerTop  = 0;
     const headerBot  = H_HEADER;
-    const overlap    = Math.max(0, Math.min(logoBottom, headerBot) - Math.max(logoTop, headerTop));
 
-    // Zodra 138px in header zitten (laatste 40px over), switch in één keer naar zwart
-    if (overlap >= 138){
+    const overlap = Math.max(0, Math.min(logoBottom, headerBot) - Math.max(logoTop, headerTop));
+
+    // Fade naar zwart zodra de laatste 40px in de header zit
+    const THRESHOLD_PX = 40; // "laatste 40px"
+    if (overlap >= h - THRESHOLD_PX){
       imgB.style.opacity = 1;
     } else {
       imgB.style.opacity = 0;
@@ -262,6 +297,11 @@
   window.addEventListener('scroll', onScroll, {passive:true});
   window.addEventListener('load', onScroll);
 
+  // Menu-pin
   const siteNav    = document.getElementById('siteNav');
   const menuToggle = document.getElementById('menuToggle');
-  menuToggle.addEventListener('click', (e)=>{ e.stopPropagation(); siteNav
+  menuToggle.addEventListener('click', (e)=>{ e.stopPropagation(); siteNav.classList.toggle('pinned'); });
+  document.addEventListener('click', (e)=>{ if(!siteNav.contains(e.target)){ siteNav.classList.remove('pinned'); } });
+</script>
+</body>
+</html>
